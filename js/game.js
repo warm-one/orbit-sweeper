@@ -26,8 +26,10 @@
       this.score = 0;
       this.combo = 0;
       this.mult = 1;
+      this.comboTimer = 0;
       this.wave = 0;
       this.upgradeCounts = {};
+      this.stats = { junk: 0, stab: 0, graze: 0 };
       this.hazardTimer = 0;
       this.hazardDelay = C.wave.hazardDelayStart;
       this.shake = 0;
@@ -73,8 +75,10 @@
       this.score = 0;
       this.combo = 0;
       this.mult = 1;
+      this.comboTimer = 0;
       this.wave = 0;
       this.upgradeCounts = {};
+      this.stats = { junk: 0, stab: 0, graze: 0 };
       this.newBestIndex = -1;
       this.shake = 0;
       this.slowmo = 0;
@@ -164,7 +168,7 @@
         if (d < ship.captureRadius + j.radius) this.capture(j, i);
       }
 
-      /* 危险残骸：生成、推进、碰撞 */
+      /* 危险残骸：生成、推进、拦截/擦弹/碰撞 */
       this.hazardTimer -= dt;
       if (this.hazardTimer <= 0) {
         const speed = Math.min(
@@ -177,11 +181,35 @@
       for (let i = this.hazards.length - 1; i >= 0; i--) {
         const hz = this.hazards[i];
         hz.step(dt);
-        if (hz.active && ship.invuln <= 0) {
+        if (hz.active) {
+          const dx = ship.x - hz.x, dy = ship.y - hz.y;
+          const d = Math.hypot(dx, dy) || 1;
           const rr = hz.radius + ship.radius - 2;
-          if (OS.dist2(hz.x, hz.y, ship.x, ship.y) < rr * rr) {
+
+          /* 碰撞 → 损血 */
+          if (ship.invuln <= 0 && d < rr) {
             this.damage(hz, i);
             continue;
+          }
+
+          /* 磁力牵引：强减速 + 稳定进度，牵引满则回收（残骸拦截） */
+          if (d < ship.magnetRadius) {
+            const drag = 1 / (1 + C.hazard.magnetDrag * dt);
+            hz.vx *= drag;
+            hz.vy *= drag;
+            hz.stability += dt / ship.stabilizeTime;
+            if (hz.stability >= 1) {
+              this.stabilize(hz, i);
+              continue;
+            }
+          } else if (hz.stability > 0) {
+            hz.stability = Math.max(0, hz.stability - dt / C.hazard.stabilityDecay);
+          }
+
+          /* 擦弹：贴着残骸擦过（未碰撞）也结算 */
+          if (!hz.grazed && d < C.hazard.grazeRadius && d > rr + 4) {
+            hz.grazed = true;
+            this.graze(hz, d);
           }
         }
         if (hz.offscreen(this.w, this.h)) this.hazards.splice(i, 1);
@@ -205,6 +233,17 @@
         this.particles.push(p);
       }
 
+      /* 连击超时：holdTime 秒不进账则清零，逼迫玩家保持移动 */
+      if (this.combo > 0) {
+        this.comboTimer -= dt;
+        if (this.comboTimer <= 0) {
+          if (this.combo >= C.combo.step) OS.audio.play('comboBreak');
+          this.combo = 0;
+          this.mult = 1;
+          this.comboTimer = 0;
+        }
+      }
+
       OS.Particles.step(this, dt);
       this.stepFloats(dt);
       if (this.shake > 0) this.shake -= dt;
@@ -216,9 +255,11 @@
     capture(j, i) {
       this.junk.splice(i, 1);
       this.combo++;
+      this.comboTimer = C.combo.holdTime;
       this.mult = Math.min(C.combo.maxMult, 1 + Math.floor(this.combo / C.combo.step));
       const gained = Math.round(j.value * this.ship.mods.valueMul * this.mult);
       this.score += gained;
+      this.stats.junk++;
       this.floats.push({
         x: j.x, y: j.y,
         text: `+${gained}`,
@@ -230,12 +271,53 @@
       OS.audio.play(j.gold ? 'gold' : 'capture', { combo: this.combo });
     }
 
+    /* 残骸拦截：稳定进度吸满，把高速残骸变成高分回收 */
+    stabilize(hz, i) {
+      this.hazards.splice(i, 1);
+      this.combo++;
+      this.comboTimer = C.combo.holdTime;
+      this.mult = Math.min(C.combo.maxMult, 1 + Math.floor(this.combo / C.combo.step));
+      const gained = Math.round(C.hazard.value * this.ship.mods.valueMul * this.mult);
+      this.score += gained;
+      this.stats.stab++;
+      this.floats.push({
+        x: hz.x, y: hz.y,
+        text: `拦截 +${gained}`,
+        sub: this.mult > 1 ? `×${this.mult}` : '',
+        life: 1.1, maxLife: 1.1,
+        gold: true
+      });
+      OS.Particles.burst(this, hz.x, hz.y, 24, '#f87171', { speed: 220 });
+      OS.Particles.burst(this, hz.x, hz.y, 18, '#67e8f9', { speed: 260 });
+      OS.audio.play('stabil');
+    }
+
+    /* 擦弹：贴着残骸擦过的高风险走位奖励 */
+    graze(hz, d) {
+      this.combo++;
+      this.comboTimer = C.combo.holdTime;
+      this.mult = Math.min(C.combo.maxMult, 1 + Math.floor(this.combo / C.combo.step));
+      const gained = Math.round(C.hazard.grazeValue * this.ship.mods.grazeMul * this.mult);
+      this.score += gained;
+      this.stats.graze++;
+      this.floats.push({
+        x: this.ship.x + (hz.x - this.ship.x) / 2,
+        y: this.ship.y + (hz.y - this.ship.y) / 2 - 12,
+        text: `擦弹 +${gained}`,
+        sub: '',
+        life: 0.8, maxLife: 0.8,
+        gold: false, small: true
+      });
+      OS.audio.play('graze');
+    }
+
     damage(hz, i) {
       const ship = this.ship;
       this.hazards.splice(i, 1);
       ship.hp--;
       this.combo = 0;
       this.mult = 1;
+      this.comboTimer = 0;
       ship.invuln = C.hp.invuln;
       /* 沿撞击方向击退 */
       const dx = ship.x - hz.x, dy = ship.y - hz.y;
@@ -274,6 +356,8 @@
         case 'magnet': ship.magnetRadius *= 1.18; break;
         case 'engine': ship.maxSpeed *= 1.12; ship.accel *= 1.08; break;
         case 'net': ship.captureRadius *= 1.14; break;
+        case 'stabilizer': ship.stabilizeTime *= 0.82; break;
+        case 'coat': ship.mods.grazeMul *= 1.6; break;
         case 'armor':
           ship.hpMax = Math.min(C.hp.max, ship.hpMax + 1);
           ship.hp = ship.hpMax;
@@ -325,10 +409,10 @@
     drawFloats(ctx) {
       if (!this.floats.length) return;
       ctx.textAlign = 'center';
-      ctx.font = '600 15px "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif';
       for (const f of this.floats) {
         ctx.globalAlpha = Math.min(1, (f.life / f.maxLife) * 2);
         ctx.fillStyle = f.gold ? '#fde68a' : '#a5f3fc';
+        ctx.font = (f.small ? '500 12px ' : '600 15px ') + '"Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif';
         ctx.fillText(f.sub ? `${f.text} ${f.sub}` : f.text, f.x, f.y);
       }
       ctx.globalAlpha = 1;

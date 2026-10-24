@@ -22,27 +22,38 @@
     wave: {
       baseJunk: 6, junkPerWave: 2, maxJunk: 26,
       goldChance: 0.08,                                 // 金色垃圾（高价）概率
-      hazardDelayStart: 3.8, hazardDelayDecay: 0.25, hazardDelayMin: 1.6, // 残骸生成间隔随波次缩短
+      hazardDelayStart: 3.4, hazardDelayDecay: 0.25, hazardDelayMin: 1.5, // 残骸生成间隔随波次缩短
       hazardSpeed: 140, hazardSpeedPerWave: 7, hazardSpeedMax: 320,
       warning: 0.7,        // 残骸入场前的边缘预警时长
       spawnClearRadius: 150 // 垃圾生成点与船的最小距离
     },
 
+    hazard: {
+      magnetDrag: 3.5,     // 残骸进入磁力圈后的减速强度
+      stabilizeTime: 1.15, // 持续牵引该时长即可"稳定化"残骸（秒）
+      stabilityDecay: 1.6, // 离开磁力圈后稳定进度完全回落的秒数
+      value: 80,           // 稳定化回收得分
+      grazeRadius: 46,     // 擦弹判定距离（须大于碰撞距离）
+      grazeValue: 15       // 擦弹得分
+    },
+
     junk: { drift: 55, value: 10, goldValue: 50, rMin: 9, rMax: 20 },
 
-    combo: { step: 8, maxMult: 4 }, // 每连击 8 次倍率 +1，上限 ×4
+    combo: { step: 8, maxMult: 4, holdTime: 5 }, // 每连击 8 次倍率 +1，上限 ×4；holdTime 秒不进账清零
 
     slowmo: { time: 0.35, scale: 0.35 }, // 受击慢动作时长与时间缩放
     shake: { time: 0.3, power: 9 },
     particles: { cap: 500 },
 
     upgrades: [
-      { id: 'magnet', icon: '🧲', name: '磁力线圈', desc: '磁力范围 +18%', max: 4 },
-      { id: 'engine', icon: '🛸', name: '离子引擎', desc: '移动速度 +12%', max: 4 },
-      { id: 'net',    icon: '🕸️', name: '捕获网',   desc: '捕获半径 +14%', max: 3 },
-      { id: 'armor',  icon: '🛡️', name: '纳米装甲', desc: '血量上限 +1 并完全修复', max: 2 },
-      { id: 'slow',   icon: '⏳', name: '时滞力场', desc: '危险残骸速度 -15%', max: 3 },
-      { id: 'value',  icon: '💎', name: '回收合同', desc: '回收价值 +20%', max: 3 }
+      { id: 'magnet',     icon: '🧲', name: '磁力线圈', desc: '磁力范围 +18%', max: 4 },
+      { id: 'engine',     icon: '🛸', name: '离子引擎', desc: '移动速度 +12%', max: 4 },
+      { id: 'net',        icon: '🕸️', name: '捕获网',   desc: '捕获半径 +14%', max: 3 },
+      { id: 'stabilizer', icon: '🌀', name: '稳定器',   desc: '残骸稳定牵引时间 -18%', max: 3 },
+      { id: 'coat',       icon: '🪶', name: '回避涂层', desc: '擦弹得分 +60%', max: 3 },
+      { id: 'armor',      icon: '🛡️', name: '纳米装甲', desc: '血量上限 +1 并完全修复', max: 2 },
+      { id: 'slow',       icon: '⏳', name: '时滞力场', desc: '危险残骸速度 -15%', max: 3 },
+      { id: 'value',      icon: '💎', name: '回收合同', desc: '回收价值 +20%', max: 3 }
     ],
 
     bestKey: 'orbitSweeper.best.v1',

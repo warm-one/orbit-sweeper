@@ -30,6 +30,7 @@
     hud: $('#hud'),
     score: $('#hudScore'),
     combo: $('#hudCombo'),
+    comboBar: $('#hudComboBar'),
     wave: $('#hudWave'),
     hearts: $('#hudHearts'),
     pauseBtn: $('#pauseBtn'),
@@ -151,10 +152,13 @@
     els.overScore.textContent = game.score;
     els.overWave.textContent = game.wave;
     els.overNew.classList.toggle('hidden', game.newBestIndex !== 0);
+    const s = game.stats;
+    document.getElementById('overMisc').textContent =
+      `本局回收 ${s.junk} 件 · 拦截残骸 ${s.stab} · 擦弹 ${s.graze} 次`;
   };
 
   /* ---------- HUD 增量刷新（只在数值变化时写 DOM） ---------- */
-  const hudCache = { score: -1, wave: -1, mult: -1 };
+  const hudCache = { score: -1, wave: -1, mult: -1, comboPct: -1 };
   game.onHud = () => {
     if (game.score !== hudCache.score) {
       hudCache.score = game.score;
@@ -168,6 +172,13 @@
       hudCache.mult = game.mult;
       els.combo.textContent = '×' + game.mult;
       els.combo.classList.toggle('hot', game.mult > 1);
+    }
+    /* 连击倒计时条：只在可见状态变化或进度变化超过 2% 时写 DOM */
+    const pct = game.combo > 0 ? game.comboTimer / C.combo.holdTime : 0;
+    if (pct !== hudCache.comboPct) {
+      hudCache.comboPct = pct;
+      els.comboBar.style.transform = 'scaleX(' + pct.toFixed(3) + ')';
+      els.comboBar.classList.toggle('on', game.combo > 0);
     }
     if (game.state === 'playing') {
       document.title = `${game.score} · 第 ${game.wave} 波 · 轨道清道夫`;

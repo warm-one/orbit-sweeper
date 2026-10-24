@@ -68,6 +68,20 @@
           this.tone({ freq: 660, dur: 0.1, type: 'triangle', vol: 0.15 });
           this.tone({ freq: 990, dur: 0.16, type: 'triangle', vol: 0.15, delay: 0.08 });
           break;
+        case 'stabil':
+          /* 拦截完成：上扬三连音，比金色垃圾更有"任务完成感" */
+          [523, 698, 880].forEach((f, i) => this.tone({ freq: f, dur: 0.1, type: 'triangle', vol: 0.13, delay: i * 0.06 }));
+          this.noise({ dur: 0.18, vol: 0.12, delay: 0.12 });
+          break;
+        case 'graze':
+          /* 擦弹：极短的高频嗖声 */
+          this.tone({ freq: 1500, slide: 2100, dur: 0.05, type: 'sine', vol: 0.07 });
+          break;
+        case 'comboBreak':
+          /* 连击断裂：低沉的双音 */
+          this.tone({ freq: 300, slide: 150, dur: 0.16, type: 'square', vol: 0.08 });
+          this.tone({ freq: 220, slide: 110, dur: 0.2, type: 'square', vol: 0.07, delay: 0.1 });
+          break;
         case 'hit':
           this.noise({ dur: 0.3, vol: 0.3 });
           this.tone({ freq: 160, slide: 60, dur: 0.3, type: 'square', vol: 0.16 });

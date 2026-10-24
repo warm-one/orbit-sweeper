@@ -16,7 +16,7 @@
 <header id="hud" class="hidden">
   <div class="hud-group">
     <div class="hud-chip"><span class="hud-label">得分</span><span id="hudScore" class="hud-num">0</span></div>
-    <div class="hud-chip"><span class="hud-label">倍率</span><span id="hudCombo" class="hud-num">×1</span></div>
+    <div class="hud-chip combo-chip"><span class="hud-label">倍率</span><span id="hudCombo" class="hud-num">×1</span><i id="hudComboBar" aria-hidden="true"></i></div>
     <div class="hud-chip"><span class="hud-label">波次</span><span id="hudWave" class="hud-num">1</span></div>
     <div class="hud-chip hearts" id="hudHearts" aria-label="血量"></div>
   </div>
@@ -42,7 +42,9 @@
     <div class="howto">
       <div class="howto-item"><span class="k">移动</span><span>WASD / 方向键，或按住屏幕拖动</span></div>
       <div class="howto-item"><span class="k">回收</span><span>靠近垃圾即可，磁力会替你完成捕获</span></div>
-      <div class="howto-item"><span class="k">躲避</span><span class="warn-text">红色残骸高速掠过，碰上会损血并中断连击</span></div>
+      <div class="howto-item"><span class="k">拦截</span><span class="good-text">红色残骸进入磁力圈会被减速，持续牵引可"稳定化"回收（+80 分）</span></div>
+      <div class="howto-item"><span class="k">擦弹</span><span>贴着残骸擦过也有分数与连击——胆子越大赚越多</span></div>
+      <div class="howto-item"><span class="k">小心</span><span class="warn-text">撞上残骸会损血并中断连击；连击 5 秒不进账也会清零</span></div>
     </div>
     <button id="startBtn" class="btn primary">开始任务</button>
     <p class="hint">Space 也可以开始 · Esc / P 暂停 · 升级时按 1 / 2 / 3 快速选择</p>
@@ -78,6 +80,7 @@
       <div class="over-stat"><span class="label">最终得分</span><span id="overScore" class="big">0</span></div>
       <div class="over-stat"><span class="label">抵达波次</span><span id="overWave" class="big">1</span></div>
     </div>
+    <p id="overMisc" class="over-misc"></p>
     <div class="best">
       <h2>最佳纪录 TOP 5</h2>
       <ol id="bestListOver" class="best-list"></ol>

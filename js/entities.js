@@ -15,7 +15,7 @@
         captureRadius: C.ship.captureRadius,
         magnetRadius: C.ship.magnetRadius
       };
-      this.mods = { hazardSpeedMul: 1, valueMul: 1 };
+      this.mods = { hazardSpeedMul: 1, valueMul: 1, grazeMul: 1 };
       this.reset(800, 600);
     }
 
@@ -28,8 +28,10 @@
       this.maxSpeed = this.base.maxSpeed;
       this.captureRadius = this.base.captureRadius;
       this.magnetRadius = this.base.magnetRadius;
+      this.stabilizeTime = C.hazard.stabilizeTime;
       this.mods.hazardSpeedMul = 1;
       this.mods.valueMul = 1;
+      this.mods.grazeMul = 1;
       this.hpMax = C.hp.start;
       this.hp = C.hp.start;
       this.invuln = 0;
@@ -175,6 +177,8 @@
       this.radius = 13;
       this.len = 34;
       this.blink = 0;
+      this.stability = 0;  // 0~1，被磁力持续牵引的稳定进度
+      this.grazed = false; // 擦弹每颗只结算一次
     }
 
     get active() {
@@ -232,6 +236,19 @@
       ctx.fillStyle = 'rgba(254,202,202,0.9)';
       ctx.fillRect(this.len / 2 - 8, -2, 6, 4);
       ctx.restore();
+
+      /* 稳定化进度弧：越接近完成越亮，完成时被回收 */
+      if (this.stability > 0) {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.strokeStyle = `rgba(103,232,249,${(0.45 + 0.5 * this.stability).toFixed(3)})`;
+        ctx.lineWidth = 2.5;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.arc(0, 0, this.len / 2 + 8, -Math.PI / 2, -Math.PI / 2 + this.stability * OS.TAU);
+        ctx.stroke();
+        ctx.restore();
+      }
     }
   };
 
