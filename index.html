@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0b1020">
+<title>轨道清道夫 · Orbit Sweeper</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20100%20100'%3E%3Ctext%20y='.9em'%20font-size='90'%3E%F0%9F%9B%B0%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-state="menu">
+
+<canvas id="game" aria-label="游戏画面"></canvas>
+
+<!-- 顶部 HUD（仅对局中显示） -->
+<header id="hud" class="hidden">
+  <div class="hud-group">
+    <div class="hud-chip"><span class="hud-label">得分</span><span id="hudScore" class="hud-num">0</span></div>
+    <div class="hud-chip"><span class="hud-label">倍率</span><span id="hudCombo" class="hud-num">×1</span></div>
+    <div class="hud-chip"><span class="hud-label">波次</span><span id="hudWave" class="hud-num">1</span></div>
+    <div class="hud-chip hearts" id="hudHearts" aria-label="血量"></div>
+  </div>
+  <div class="hud-actions">
+    <button id="muteBtn" class="icon-btn" title="声音开关" aria-label="声音开关">🔊</button>
+    <button id="pauseBtn" class="icon-btn" title="暂停（Esc / P）" aria-label="暂停">⏸</button>
+  </div>
+</header>
+
+<!-- 波次横幅 -->
+<div id="waveBanner" class="hidden" aria-hidden="true"><span id="waveBannerText">第 1 波</span></div>
+
+<!-- 全屏遮罩面板 -->
+<div id="overlay">
+
+  <!-- 主菜单 -->
+  <section id="menuPanel" class="panel">
+    <div class="brand">
+      <span class="brand-emoji" aria-hidden="true">🛰️</span>
+      <h1>轨道清道夫</h1>
+      <p class="subtitle">ORBIT SWEEPER · 清理近地轨道上的太空垃圾</p>
+    </div>
+    <div class="howto">
+      <div class="howto-item"><span class="k">移动</span><span>WASD / 方向键，或按住屏幕拖动</span></div>
+      <div class="howto-item"><span class="k">回收</span><span>靠近垃圾即可，磁力会替你完成捕获</span></div>
+      <div class="howto-item"><span class="k">躲避</span><span class="warn-text">红色残骸高速掠过，碰上会损血并中断连击</span></div>
+    </div>
+    <button id="startBtn" class="btn primary">开始任务</button>
+    <p class="hint">Space 也可以开始 · Esc / P 暂停 · 升级时按 1 / 2 / 3 快速选择</p>
+    <div class="best">
+      <h2>最佳纪录 TOP 5</h2>
+      <ol id="bestListMenu" class="best-list"></ol>
+    </div>
+  </section>
+
+  <!-- 暂停 -->
+  <section id="pausePanel" class="panel hidden">
+    <h2>已暂停</h2>
+    <p class="panel-tip">轨道还在等你清理</p>
+    <div class="btn-row">
+      <button id="resumeBtn" class="btn primary">继续</button>
+      <button id="quitBtn" class="btn ghost">返回菜单</button>
+    </div>
+  </section>
+
+  <!-- 波次升级 -->
+  <section id="upgradePanel" class="panel hidden">
+    <h2>波次完成 ✔</h2>
+    <p class="panel-tip">选择一项强化，准备迎接更密的轨道</p>
+    <div id="upgradeCards" class="upgrade-cards"></div>
+    <button id="upgradeSkip" class="btn ghost btn-block">跳过强化，直接继续</button>
+  </section>
+
+  <!-- 结算 -->
+  <section id="gameoverPanel" class="panel hidden">
+    <h2>任务结束</h2>
+    <p id="overNew" class="new-record hidden">🏆 新纪录！</p>
+    <div class="over-stats">
+      <div class="over-stat"><span class="label">最终得分</span><span id="overScore" class="big">0</span></div>
+      <div class="over-stat"><span class="label">抵达波次</span><span id="overWave" class="big">1</span></div>
+    </div>
+    <div class="best">
+      <h2>最佳纪录 TOP 5</h2>
+      <ol id="bestListOver" class="best-list"></ol>
+    </div>
+    <div class="btn-row">
+      <button id="againBtn" class="btn primary">再来一次</button>
+      <button id="menuBtn" class="btn ghost">返回菜单</button>
+    </div>
+  </section>
+
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/entities.js"></script>
+<script src="js/game.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
