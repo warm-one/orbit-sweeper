@@ -78,6 +78,7 @@ body {
 
 .hud-label { font-size: 12px; color: var(--dim); }
 .hud-num { font-size: 16px; font-weight: 700; }
+.hud-sub { font-size: 11px; color: var(--dim); align-self: center; }
 #hudCombo.hot { color: var(--amber); }
 
 /* 倍率胶囊内的连击倒计时条 */
@@ -390,6 +391,17 @@ body {
   font-size: 13px;
   margin: 0 0 12px;
   font-variant-numeric: tabular-nums;
+}
+
+/* 结算页太空垃圾科普卡 */
+.over-tip {
+  border-left: 3px solid var(--cyan);
+  background: rgba(103, 232, 249, 0.06);
+  padding: 10px 12px;
+  border-radius: 0 10px 10px 0;
+  font-size: 12.5px;
+  line-height: 1.65;
+  margin: 0 0 12px;
 }
 .new-record {
   color: var(--amber);

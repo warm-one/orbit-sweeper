@@ -88,6 +88,7 @@
       this.gold = !!gold;
       this.radius = OS.rand(C.junk.rMin, C.junk.rMax);
       this.value = this.gold ? C.junk.goldValue : C.junk.value;
+      this.tonnage = this.gold ? C.junk.goldT : +OS.rand(C.junk.tMin, C.junk.tMax).toFixed(1);
 
       /* 生成点避开飞船，防止"白送" */
       let x, y, tries = 0;
@@ -250,6 +251,41 @@
         ctx.stroke();
         ctx.restore();
       }
+    }
+  };
+
+  /* ---------- 回收无人机：绕船运行，自动捕获擦过的垃圾 ---------- */
+  OS.Drone = class {
+    constructor(phase) {
+      this.angle = phase;
+      this.x = 0;
+      this.y = 0;
+    }
+
+    step(dt, ship) {
+      this.angle += C.drone.angularSpeed * dt;
+      this.x = ship.x + Math.cos(this.angle) * C.drone.orbitRadius;
+      this.y = ship.y + Math.sin(this.angle) * C.drone.orbitRadius;
+    }
+
+    draw(ctx) {
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      ctx.rotate(this.angle + Math.PI / 2);
+      ctx.strokeStyle = 'rgba(103,232,249,0.9)';
+      ctx.lineWidth = 1.5;
+      ctx.fillStyle = 'rgba(10,30,44,0.9)';
+      ctx.beginPath();
+      ctx.moveTo(0, -6);
+      ctx.lineTo(5, 0);
+      ctx.lineTo(0, 6);
+      ctx.lineTo(-5, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#67e8f9';
+      ctx.fillRect(-1, -1, 2, 2);
+      ctx.restore();
     }
   };
 

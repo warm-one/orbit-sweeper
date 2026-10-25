@@ -18,6 +18,7 @@
       this.stars = new OS.Starfield(this.w, this.h);
       this.junk = [];
       this.hazards = [];
+      this.drones = [];
       this.particles = [];
       this.floats = [];
       this.pool = new OS.Pool(() => ({}));
@@ -29,7 +30,7 @@
       this.comboTimer = 0;
       this.wave = 0;
       this.upgradeCounts = {};
-      this.stats = { junk: 0, stab: 0, graze: 0 };
+      this.stats = { junk: 0, stab: 0, graze: 0, tonnage: 0 };
       this.hazardTimer = 0;
       this.hazardDelay = C.wave.hazardDelayStart;
       this.shake = 0;
@@ -86,12 +87,13 @@
       this.comboTimer = 0;
       this.wave = 0;
       this.upgradeCounts = {};
-      this.stats = { junk: 0, stab: 0, graze: 0 };
+      this.stats = { junk: 0, stab: 0, graze: 0, tonnage: 0 };
       this.newBestIndex = -1;
       this.shake = 0;
       this.slowmo = 0;
       this.junk.length = 0;
       this.hazards.length = 0;
+      this.drones.length = 0;
       this.floats.length = 0;
       this.ship.reset(this.w, this.h);
       this.setState('playing');
@@ -160,6 +162,19 @@
       this.time += dt;
       const ship = this.ship;
       ship.step(dt, this.input, this.w, this.h);
+
+      /* 无人机绕行并自动回收擦过的垃圾（每架每步最多结算一件） */
+      for (const d of this.drones) {
+        d.step(dt, ship);
+        for (let i = this.junk.length - 1; i >= 0; i--) {
+          const j = this.junk[i];
+          const rr = C.drone.captureRadius + j.radius;
+          if (OS.dist2(d.x, d.y, j.x, j.y) < rr * rr) {
+            this.capture(j, i);
+            break;
+          }
+        }
+      }
 
       /* 磁力牵引 + 捕获 */
       for (let i = this.junk.length - 1; i >= 0; i--) {
@@ -270,6 +285,7 @@
       const gained = Math.round(j.value * this.ship.mods.valueMul * this.mult);
       this.score += gained;
       this.stats.junk++;
+      this.stats.tonnage += j.tonnage;
       this.floats.push({
         x: j.x, y: j.y,
         text: `+${gained}`,
@@ -290,6 +306,7 @@
       const gained = Math.round(C.hazard.value * this.ship.mods.valueMul * this.mult);
       this.score += gained;
       this.stats.stab++;
+      this.stats.tonnage += C.junk.hazardT;
       this.floats.push({
         x: hz.x, y: hz.y,
         text: `拦截 +${gained}`,
@@ -370,6 +387,10 @@
         case 'net': ship.captureRadius *= 1.14; break;
         case 'stabilizer': ship.stabilizeTime *= 0.82; break;
         case 'coat': ship.mods.grazeMul *= 1.6; break;
+        case 'drone':
+          /* 第二架无人机反向相位部署 */
+          this.drones.push(new OS.Drone(this.drones.length ? this.drones[0].angle + Math.PI : 0));
+          break;
         case 'armor':
           ship.hpMax = Math.min(C.hp.max, ship.hpMax + 1);
           ship.hp = ship.hpMax;
@@ -466,6 +487,7 @@
 
       if (this.state === 'playing' || this.state === 'paused' || this.state === 'upgrade') {
         this.drawShip(ctx);
+        for (const d of this.drones) d.draw(ctx);
       }
 
       OS.Particles.draw(ctx, this);

@@ -37,7 +37,10 @@
       grazeValue: 15       // 擦弹得分
     },
 
-    junk: { drift: 55, value: 10, goldValue: 50, rMin: 9, rMax: 20 },
+    junk: { drift: 55, value: 10, goldValue: 50, rMin: 9, rMax: 20,
+            tMin: 0.4, tMax: 2.5, goldT: 4, hazardT: 6 }, // 吨位：结算页的"清理量"统计
+
+    drone: { orbitRadius: 62, angularSpeed: 2.2, captureRadius: 17 },
 
     combo: { step: 8, maxMult: 4, holdTime: 5 }, // 每连击 8 次倍率 +1，上限 ×4；holdTime 秒不进账清零
 
@@ -48,12 +51,27 @@
     upgrades: [
       { id: 'magnet',     icon: '🧲', name: '磁力线圈', desc: '磁力范围 +18%', max: 4 },
       { id: 'engine',     icon: '🛸', name: '离子引擎', desc: '移动速度 +12%', max: 4 },
+      { id: 'drone',      icon: '🤖', name: '回收无人机', desc: '一架无人机绕行，自动回收擦过的碎片', max: 2 },
       { id: 'net',        icon: '🕸️', name: '捕获网',   desc: '捕获半径 +14%', max: 3 },
       { id: 'stabilizer', icon: '🌀', name: '稳定器',   desc: '残骸稳定牵引时间 -18%', max: 3 },
       { id: 'coat',       icon: '🪶', name: '回避涂层', desc: '擦弹得分 +60%', max: 3 },
       { id: 'armor',      icon: '🛡️', name: '纳米装甲', desc: '血量上限 +1 并完全修复', max: 2 },
       { id: 'slow',       icon: '⏳', name: '时滞力场', desc: '危险残骸速度 -15%', max: 3 },
       { id: 'value',      icon: '💎', name: '回收合同', desc: '回收价值 +20%', max: 3 }
+    ],
+
+    /* 太空垃圾真实科普：结算页随机展示一条，呼应"清理轨道"的题材 */
+    tips: [
+      '凯斯勒效应：碎片相撞产生更多碎片，可能引发级联连锁反应，让某些轨道高度彻底不可用。',
+      '国际空间站平均每年都要执行数次规避机动，躲开迎面而来的碎片。',
+      '2009 年，工作的铱星 33 与废弃的宇宙 2251 卫星相撞，产生两千多块可追踪碎片。',
+      '地球轨道上大于 10 厘米的可追踪物体已超过三万个；小于 1 厘米的碎片估计过亿。',
+      '一块 1 厘米的铝球以轨道速度撞击，释放的能量相当于一颗手榴弹。',
+      '航天器常用"惠普尔防护层"：用一层牺牲板把毫米级碎片汽化成无害的等离子体云。',
+      '报废卫星的标准归宿：推入"墓地轨道"，或受控再入大气层烧毁。',
+      '轨道物体相撞的相对速度可达 15 km/s，是步枪子弹的十倍以上。',
+      '欧空局正在研发"太空清道夫"航天器，专门抓取废弃物体拖离轨道。',
+      '低轨道碎片会被稀薄大气阻力缓慢拖落，高度越低，"自清洁"越快。'
     ],
 
     bestKey: 'orbitSweeper.best.v1',

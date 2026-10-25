@@ -32,6 +32,7 @@
     combo: $('#hudCombo'),
     comboBar: $('#hudComboBar'),
     wave: $('#hudWave'),
+    left: $('#hudLeft'),
     hearts: $('#hudHearts'),
     pauseBtn: $('#pauseBtn'),
     muteBtn: $('#muteBtn'),
@@ -154,11 +155,13 @@
     els.overNew.classList.toggle('hidden', game.newBestIndex !== 0);
     const s = game.stats;
     document.getElementById('overMisc').textContent =
-      `本局回收 ${s.junk} 件 · 拦截残骸 ${s.stab} · 擦弹 ${s.graze} 次`;
+      `本局回收 ${s.junk} 件 · 拦截残骸 ${s.stab} · 擦弹 ${s.graze} 次 · 清理轨道 ${s.tonnage.toFixed(1)} 吨碎片`;
+    document.getElementById('overTip').textContent =
+      '💡 ' + OS.pick(C.tips);
   };
 
   /* ---------- HUD 增量刷新（只在数值变化时写 DOM） ---------- */
-  const hudCache = { score: -1, wave: -1, mult: -1, comboPct: -1 };
+  const hudCache = { score: -1, wave: -1, mult: -1, comboPct: -1, left: -1 };
   game.onHud = () => {
     if (game.score !== hudCache.score) {
       hudCache.score = game.score;
@@ -167,6 +170,11 @@
     if (game.wave !== hudCache.wave) {
       hudCache.wave = game.wave;
       els.wave.textContent = game.wave;
+    }
+    const left = game.junk.length;
+    if (left !== hudCache.left) {
+      hudCache.left = left;
+      els.left.textContent = left > 0 ? '剩' + left : '';
     }
     if (game.mult !== hudCache.mult) {
       hudCache.mult = game.mult;
