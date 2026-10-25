@@ -46,7 +46,6 @@
       if (k.right) ax += 1;
       if (k.up) ay -= 1;
       if (k.down) ay += 1;
-      this.thrusting = !!(ax || ay || input.tx != null);
 
       if (ax || ay) {
         const d = Math.hypot(ax, ay);
@@ -56,6 +55,8 @@
         const d = Math.hypot(dx, dy);
         if (d > 6) { ax = dx / d; ay = dy / d; }
       }
+      /* 只有真正产生了加速度才点亮尾焰 */
+      this.thrusting = !!(ax || ay);
 
       this.vx += ax * this.accel * dt;
       this.vy += ay * this.accel * dt;

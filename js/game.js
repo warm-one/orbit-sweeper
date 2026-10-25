@@ -40,6 +40,14 @@
       this.best = OS.loadJSON(C.bestKey, []);
       this.newBestIndex = -1;
 
+      /* 存档容错：数据损坏（非数组/条目形状不对）时静默丢弃，不让结算页崩溃 */
+      if (!Array.isArray(this.best)) this.best = [];
+      this.best = this.best.filter((e) =>
+        e && typeof e === 'object' &&
+        typeof e.score === 'number' && isFinite(e.score) &&
+        typeof e.wave === 'number' && typeof e.ts === 'number'
+      ).slice(0, 5);
+
       /* 由 main.js 注入的 UI 回调 */
       this.onStateChange = null;
       this.onHud = null;
@@ -126,7 +134,9 @@
         const scale = this.slowmo > 0 ? C.slowmo.scale : 1;
         this.acc += dt * scale;
         let guard = 0;
-        while (this.acc >= C.step && guard++ < 16) {
+        /* 状态切换（波次完成/游戏结束）后立即停止推进本帧剩余步长，
+           防止重复结算、排行榜重复写入与音效叠加 */
+        while (this.acc >= C.step && this.state === 'playing' && guard++ < 16) {
           this.step(C.step);
           this.acc -= C.step;
         }
@@ -312,6 +322,7 @@
     }
 
     damage(hz, i) {
+      if (this.state !== 'playing') return;
       const ship = this.ship;
       this.hazards.splice(i, 1);
       ship.hp--;
@@ -335,6 +346,7 @@
     }
 
     waveClear() {
+      if (this.state !== 'playing') return;
       OS.audio.play('wave');
       this.setState('upgrade');
       if (this.onUpgradeOffer) this.onUpgradeOffer(this.pickUpgrades());
@@ -371,13 +383,15 @@
       this.nextWave();
     }
 
-    /* 升级全部满级时直接进入下一波 */
+    /* 升级全部满级时直接进入下一波；仅在升级面板状态下有效（防连点跳波） */
     continueWave() {
+      if (this.state !== 'upgrade') return;
       this.setState('playing');
       this.nextWave();
     }
 
     gameOver() {
+      if (this.state === 'gameover') return;
       OS.Particles.burst(this, this.ship.x, this.ship.y, 60, '#67e8f9', { speed: 320, lifeMul: 1.6 });
       OS.Particles.burst(this, this.ship.x, this.ship.y, 30, '#f87171', { speed: 220, lifeMul: 1.6 });
       OS.audio.play('over');

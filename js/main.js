@@ -268,6 +268,16 @@
     if (dir) game.input.keys[dir] = false;
   });
 
+  /* 失焦时清空输入：按住键切窗口会丢失 keyup，导致船持续漂移 */
+  window.addEventListener('blur', () => {
+    game.input.keys.left = false;
+    game.input.keys.right = false;
+    game.input.keys.up = false;
+    game.input.keys.down = false;
+    game.input.tx = null;
+    game.input.ty = null;
+  });
+
   /* ---------- 指针 / 触屏（按住拖动，船跟随） ---------- */
   canvas.addEventListener('pointerdown', (e) => {
     OS.audio.init();
